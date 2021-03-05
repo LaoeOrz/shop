@@ -30,7 +30,6 @@
 </template>
 
 <script>
-import axios from 'axios';
 export default {
   data() {
     return {
@@ -69,28 +68,28 @@ export default {
     };
   },
   methods: {
-    submitForm() {
-      this.$refs.form.validate((value, obj) => {
-        if (!value) return
-        axios.post('login',this.ruleForm).then(res=>{
-          const {meta,data} =res.data
-          if(meta.status == 200){
-            this.$message({
-              message: meta.msg,
-              type: "success",
-              duration:1000
-            });
-            window.localStorage.setItem('token',data.token)
-            this.$router.push('/index')
-          }else{
-            this.$message({
-              message: meta.msg,
-              type: "error",
-              duration:1000
-              });
-          }
-        })
-      });
+    async submitForm() {
+      try {
+        await this.$refs.form.validate();
+         const { meta, data } = await this.$axios.post("login", this.ruleForm);
+        if (meta.status == 200) {
+          this.$message({
+            message: meta.msg,
+            type: "success",
+            duration: 1000,
+          });
+          window.localStorage.setItem("token", data.token);
+          this.$router.push("/index");
+        } else {
+          this.$message({
+            message: meta.msg,
+            type: "error",
+            duration: 1000,
+          });
+        }
+      } catch (e) {
+        console.log(e), console.log("校验失败");
+      }
     },
     reset() {
       this.$refs.form.resetFields();

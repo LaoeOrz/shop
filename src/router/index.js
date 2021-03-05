@@ -2,6 +2,10 @@ import Vue from 'vue'
 import Router from 'vue-router'
 import login from '@/components/login'
 import index from '@/components/index'
+import rights from '@/components/rights'
+import users from '@/components/users'
+import roles from '@/components/roles'
+
 
 Vue.use(Router)
 
@@ -19,7 +23,24 @@ const router = new Router({
     {
       path: '/index',
       name: 'index',
-      component: index
+      component: index,
+      children:[
+        {
+          path:'/users',
+          name: 'users',
+          component:users
+        },
+        {
+          path:'/rights',
+          name: 'rights',
+          component:rights
+        },
+        {
+          path:'/roles',
+          name: 'roles',
+          component:roles
+        },
+      ]
     }
   ]
 })

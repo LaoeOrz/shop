@@ -27,9 +27,18 @@
     </el-dialog>
     <!-- 修改 -->
     <el-dialog title="修改用户" :visible.sync="changeVisible" width="40%">
-      <el-form ref="changeform" :model="changeform" label-width="80px" :rules="changerules">
-        <el-form-item label="用户名" >
-          <el-input class="input1" v-model="changeform.username" :disabled="true"></el-input>
+      <el-form
+        ref="changeform"
+        :model="changeform"
+        label-width="80px"
+        :rules="changerules"
+      >
+        <el-form-item label="用户名">
+          <el-input
+            class="input1"
+            v-model="changeform.username"
+            :disabled="true"
+          ></el-input>
         </el-form-item>
         <el-form-item label="邮箱" prop="email">
           <el-input class="input1" v-model="changeform.email"></el-input>
@@ -41,6 +50,31 @@
       <span slot="footer" class="dialog-footer">
         <el-button @click="changeVisible = false">取 消</el-button>
         <el-button type="primary" @click="changeusersok">确 定</el-button>
+      </span>
+    </el-dialog>
+    <!-- 分配角色 -->
+    <el-dialog title="提示" :visible.sync="allocateDialog" width="30%">
+      <el-form v-model="allocateData" label-width="80px">
+        <el-form-item label="用户名">
+          <el-tag type="info">{{ allocateData.username }}</el-tag>
+        </el-form-item>
+        <el-form-item label="角色列表">
+          <el-select v-model="allocateData.rid" placeholder="请选择">
+            <el-option
+              v-for="item in roles"
+              :key="item.id"
+              :label="item.roleName"
+              :value="item.id"
+            >
+            </el-option>
+          </el-select>
+        </el-form-item>
+      </el-form>
+      <span slot="footer" class="dialog-footer">
+        <el-button @click="allocateDialog = false">取 消</el-button>
+        <el-button type="primary" @click="allocateOk"
+          >分 配</el-button
+        >
       </span>
     </el-dialog>
     <el-breadcrumb separator-class="el-icon-arrow-right">
@@ -70,7 +104,7 @@
       <el-table-column label="操作">
         <template v-slot:default="obj">
           <el-button
-          @click="changeUser(obj.row)"
+            @click="changeUser(obj.row)"
             type="primary"
             size="small"
             plain
@@ -83,7 +117,12 @@
             plain
             icon="el-icon-delete"
           ></el-button>
-          <el-button type="success" size="small" plain icon="el-icon-check"
+          <el-button
+            @click="allocate(obj.row)"
+            type="success"
+            size="small"
+            plain
+            icon="el-icon-check"
             >分配角色</el-button
           >
         </template>
@@ -174,40 +213,67 @@ export default {
           this.$message.error(meta.msg);
           this.dialogVisible = false;
         }
-      } catch (e) {
-      }
+      } catch (e) {}
     },
-    changeUser(row){
-      this.changeVisible=true
-      this.changeform=row
+    changeUser(row) {
+      this.changeVisible = true;
+      this.changeform = row;
     },
-    async changeusersok(){
-      try{
-        await this.$refs.changeform.validate()
-        const {meta,data} = await this.$axios.put(`users/${this.changeform.id}`,{
-          email:this.changeform.email,
-          mobile:this.changeform.mobile
-        })
-        if(meta.status===200){
-          this.$message.success(meta.msg)
-        }else{
-          this.$message.error(meta.msg)
-
+    async changeusersok() {
+      try {
+        await this.$refs.changeform.validate();
+        const { meta, data } = await this.$axios.put(
+          `users/${this.changeform.id}`,
+          {
+            email: this.changeform.email,
+            mobile: this.changeform.mobile,
+          }
+        );
+        if (meta.status === 200) {
+          this.$message.success(meta.msg);
+        } else {
+          this.$message.error(meta.msg);
         }
+      } catch (e) {}
+    },
+    async allocate(row) {
+      this.allocateDialog = true;
+      this.allocateData.username = row.username;
+      this.allocateData.id = row.id;
+      const res = await this.$axios.get(`users/${row.id}`)
+      this.allocateData.rid=res.data.rid === -1?'': res.data.rid
+      const { meta, data } = await this.$axios.get("roles");
+      if (meta.status === 200) {
+        this.roles = data;
       }
-      catch(e){
+    },
+    async allocateOk(){
+      this.allocateDialog = false
+      const {meta,data} = await this.$axios.put(`users/${this.allocateData.id}`,{rid:this.allocateData.rid})
+      if(meta.status===200){
+        this.$message.success(meta.msg)
+      }else{
+        this.$message.error(meta.msg)
       }
+      this.ueserList()
     }
   },
   data() {
     return {
-      changeVisible:false,
-      changeform:{},
+      roles: "",
+      allocateDialog: false,
+      changeVisible: false,
+      changeform: {},
       form: {
         username: "",
         password: "",
         email: "",
         phone: "",
+      },
+      allocateData: {
+        username: "",
+        id:"",
+        rid: "",
       },
       rules: {
         username: [

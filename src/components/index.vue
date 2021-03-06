@@ -37,7 +37,6 @@ export default {
   created() {
     this.$axios.get("menus").then((res) => {
       this.leftMenus = res.data;
-      console.log(this.leftMenus);
     });
   },
   methods: {

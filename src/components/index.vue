@@ -7,43 +7,21 @@
     </el-header>
     <el-container>
       <el-aside width="200px">
-        <el-menu
-          default-active="2"
-          class="el-menu-vertical-demo"
-          background-color="#545c64"
-          text-color="#fff"
-          active-text-color="#ffd04b"
-          :unique-opened = true
-          :router = true
-        >
-          <el-submenu index="1">
+        <el-menu default-active="2" class="el-menu-vertical-demo" background-color="#545c64" text-color="#fff" active-text-color="#ffd04b" :unique-opened="true" :router="true" >
+          <el-submenu :index="l1.path" v-for="l1 in leftMenus" :key="l1.id">
             <template slot="title">
               <i class="el-icon-location"></i>
-              <span>用户管理</span>
+              <span>{{l1.authName}}</span>
             </template>
-            <el-menu-item index="/users">
+            <el-menu-item :index="l2.path" v-for="l2 in l1.children" :key="l2.id">
               <i class="el-icon-user"></i>
-              <span slot="title">用户列表</span>
-            </el-menu-item>
-          </el-submenu>
-          <el-submenu index="2">
-            <template slot="title">
-              <i class="el-icon-location"></i>
-              <span>权限管理</span>
-            </template>
-            <el-menu-item index="/roles">
-              <i class="el-icon-user"></i>
-              <span slot="title">角色列表</span>
-            </el-menu-item>
-            <el-menu-item index="/rights">
-              <i class="el-icon-user"></i>
-              <span slot="title">权限列表</span>
+              <span slot="title">{{l2.authName}}</span>
             </el-menu-item>
           </el-submenu>
         </el-menu>
       </el-aside>
       <el-main>
-          <router-view></router-view>
+        <router-view></router-view>
       </el-main>
     </el-container>
   </el-container>
@@ -52,7 +30,15 @@
 <script>
 export default {
   data() {
-    return {};
+    return {
+      leftMenus: [],
+    };
+  },
+  created() {
+    this.$axios.get("menus").then((res) => {
+      this.leftMenus = res.data;
+      console.log(this.leftMenus);
+    });
   },
   methods: {
     exit() {
@@ -76,8 +62,8 @@ export default {
 </script>
 
 <style scoped>
-.el-menu{
-    border: 0;
+.el-menu {
+  border: 0;
 }
 .fr {
   float: right;
@@ -98,7 +84,7 @@ export default {
   background-color: skyblue;
 }
 .el-main {
-  background-color: rgb(160, 159, 159);
+  background-color: #ecf0f1;
 }
 .el-menu {
   height: 100%;
